@@ -1,7 +1,19 @@
-groups_cfg = "/etc/prosody/conf.d/prosody_groups.lua"
+case node["platform"]
+when "debian", "ubuntu"
+  cfg_partial_dir = "/etc/prosody/conf.d"
+  cfg_dir = "/etc/prosody"
+else
+  Chef::Log.error("Not supported: #{node["lsb"]["name"]}")
+end
 
-execute "load sharedgroups" do
-  command "echo 'groups_file = \"/var/prosody/sharedgroups.txt\"' > #{groups_cfg}"
+template "#{cfg_partial_dir}/prosody_groups.lua" do
+  source "empty.erb"
+  owner "prosody"
+  group "prosody"
+  mode "0644"
+  variables({
+    :content => "groups_file = \"/var/prosody/sharedgroups.txt\""
+  })
 end
 
 template "/var/prosody/sharedgroups.txt" do
